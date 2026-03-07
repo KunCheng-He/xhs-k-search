@@ -11,6 +11,7 @@ class User(BaseModel):
 
 class Note(BaseModel):
     note_id: str
+    xsec_token: Optional[str] = None
     title: str
     desc: Optional[str] = None
     cover: Optional[str] = None
@@ -20,6 +21,12 @@ class Note(BaseModel):
     collect_count: int = 0
     share_count: int = 0
     tag_list: List[str] = []
+
+    @property
+    def url(self) -> str:
+        if self.xsec_token:
+            return f"https://www.xiaohongshu.com/explore/{self.note_id}?xsec_token={self.xsec_token}&xsec_source=pc_feed"
+        return f"https://www.xiaohongshu.com/explore/{self.note_id}"
 
 
 class Comment(BaseModel):

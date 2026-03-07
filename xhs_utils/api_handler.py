@@ -65,6 +65,7 @@ class XHSApiHandler:
 
                         note = Note(
                             note_id=item.get("note_id", "") or item.get("id", ""),
+                            xsec_token=item.get("xsec_token", ""),
                             title=note_card.get("display_title", ""),
                             cover=cover_info.get("url_default", "")
                             or cover_info.get("url", ""),
