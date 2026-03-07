@@ -2,62 +2,110 @@
 
 小红书搜索脚本，通过浏览器自动化技术获取搜索结果、帖子内容及评论数据。
 
+## 功能特性
+
+- 搜索关键词获取帖子列表
+- 获取帖子详情与评论
+- 登录状态持久化
+- 支持无头模式（搜索功能）
+
 ## 技术栈
 
 - Python 3.10+
-- [Playwright](https://playwright.dev/) - 浏览器控制
-- [playwright-stealth](https://github.com/AtinyOne/Playwright-stealth) - 反爬隐藏
+- [Playwright](https://playwright.dev/) - 浏览器自动化
+- [playwright-stealth](https://github.com/AtinyOne/Playwright-stealth) - 反爬检测规避
 - [Pydantic](https://docs.pydantic.dev/) - 数据模型
 
 ## 安装
 
 ```bash
-# 安装依赖
 uv sync
-
-# 安装浏览器
 uv run playwright install chromium
 ```
 
 ## 使用方法
 
-### 首次登录
-
-首次使用需要登录小红书账号：
+### 登录
 
 ```bash
 uv run python main.py --login
 ```
 
-这将打开浏览器窗口，请完成扫码登录。登录成功后，状态会自动保存到 `auth.json`。
+打开浏览器窗口，完成扫码登录。登录状态保存到 `auth.json`。
 
-### 搜索内容
+### 搜索
 
 ```bash
-# 有头模式（显示浏览器窗口）
+# 有头模式
 uv run python main.py --keyword "Python"
 
-# 无头模式（后台运行，适合自动化）
+# 无头模式
 uv run python main.py --keyword "Python" --headless
+```
+
+### 获取帖子详情
+
+```bash
+uv run python main.py --note-id <帖子ID> --xsec-token <token>
+```
+
+> 帖子详情功能因反爬限制，强制使用有头模式。
+
+## 数据结构
+
+搜索结果返回 `SearchResult`：
+
+```json
+{
+  "items": [
+    {
+      "note_id": "...",
+      "xsec_token": "...",
+      "title": "标题",
+      "cover": "封面图",
+      "author": {"user_id": "...", "nickname": "..."},
+      "liked_count": 100,
+      "comment_count": 10,
+      "url": "https://www.xiaohongshu.com/explore/..."
+    }
+  ],
+  "total": 20,
+  "has_more": true
+}
+```
+
+帖子详情返回 `NoteDetailWithComments`：
+
+```json
+{
+  "note": {
+    "note_id": "...",
+    "title": "标题",
+    "desc": "正文",
+    "image_list": ["..."],
+    "tag_list": ["标签"],
+    "author": {...}
+  },
+  "comment_list": [
+    {"comment_id": "...", "content": "...", "user": {...}}
+  ]
+}
 ```
 
 ## 项目结构
 
 ```
 xhs-k-search/
-├── .python-version      # Python 版本声明
-├── pyproject.toml       # 项目依赖配置
-├── auth.json            # 登录状态（自动生成）
-├── main.py              # 脚本入口
-├── login_helper.py      # 登录逻辑
-├── xhs_utils/           # 核心模块
-│   ├── browser.py       # 浏览器配置
-│   ├── api_handler.py   # API 处理
-│   └── data_models.py   # 数据模型
-└── PLAN.md              # 技术方案
+├── main.py              # 入口
+├── login_helper.py      # 登录
+└── xhs_utils/
+    ├── browser.py       # 浏览器管理
+    ├── api_handler.py   # API 拦截与解析
+    └── data_models.py   # Pydantic 模型
 ```
 
 ## 注意事项
 
-- 请勿将 `auth.json` 提交到版本库
-- 如登录状态失效，删除 `auth.json` 后重新登录
+- `auth.json` 不纳入版本控制
+- 登录失效时删除 `auth.json` 重新登录
+- 帖子详情功能不支持无头模式（反爬限制）

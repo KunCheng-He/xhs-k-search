@@ -25,7 +25,7 @@ async def async_main():
         await helper.login_and_save(auth_file)
 
     if args.note_id:
-        async with XHSBrowser(headless=args.headless) as browser:
+        async with XHSBrowser(headless=False) as browser:
             api_handler = XHSApiHandler(browser.context)
             result = await api_handler.get_note_detail(args.note_id, args.xsec_token)
             print(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
